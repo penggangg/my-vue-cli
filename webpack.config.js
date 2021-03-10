@@ -1,24 +1,53 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require('path')
-const VueLoaderPlugin = require('vue-loader/lib/plugin');
-const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin') // 运行 成功失败后的提示语
-const { CleanWebpackPlugin }  = require('clean-webpack-plugin') // 清空目录
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');// css 分离
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin'); // css 压缩
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin') // js 压缩
+/**
+ * 生成html文件
+ */
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+/**
+ * 识别vue 文件
+ */
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
+/**
+ * 运行 成功失败后的提示语 
+ */
+const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
+/**
+ * 清空目录
+ */
+const { CleanWebpackPlugin }  = require('clean-webpack-plugin')
+/**
+ * css 分离
+ */
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+/**
+ * css 压缩 
+ */
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+/**
+ * js 压缩
+ */
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin') 
 // const ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
 
+/**
+ * copy静态文件
+ */
+const CopyPlugin = require('copy-webpack-plugin')
 /**
  * mode=“production”, 会自动添加 uglifyJsPlugin功能，不需要额外配置 mode=“development”, 就算添加了 uglifyJsPlugin配置，也不会起作用
  * 必须配置devtool
  */
+/**
+ * 打包后的文件分析
+ */
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const resolve = function(dir) {
     return path.join(__dirname, dir)
 }
 const isDev = process.env.NODE_ENV !== 'production'
-const chunkhash = isDev ? '[name].[hash:8].js' : '[name].[chunkhash:8].js';
-const contenthash = isDev ? '[name].[hash:8].css' : '[name].[contenthash:8].css';
+const chunkhash = isDev ? '[name].[hash:8].js' : 'js/[name].[chunkhash:8].js';
+const contenthash = isDev ? '[name].[hash:8].css' : 'css/[name].[contenthash:8].css';
 console.log(isDev)
 module.exports = {
     // context: path.resolve(__dirname, '../'),
@@ -29,7 +58,8 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, './dist'),
-        filename: chunkhash
+        filename: chunkhash,
+        chunkFilename: chunkhash
     },
     resolve: {
         extensions: ['.vue', '.js', '.json'],
@@ -81,16 +111,26 @@ module.exports = {
     },
     plugins: [
         ...(isDev ? [] : [new CleanWebpackPlugin()]),
+        ...(process.env.npm_config_report ? [new BundleAnalyzerPlugin()] : []),
         new HtmlWebpackPlugin({
             filename: 'index.html',
             template: 'index.html',
             inject: 'body',
             // hash: true
         }),
+        // css 分离
         new MiniCssExtractPlugin({
             filename: contenthash,
             chunkFilename: contenthash,
         }),
+        // copy 静态文件
+        new CopyPlugin([
+            {
+                from: path.resolve(__dirname, './static'),
+                to: 'static',
+                ignore: ['.*']
+            }
+        ]),
         new VueLoaderPlugin(),
         new FriendlyErrorsPlugin({
             // 运行成功
@@ -119,6 +159,16 @@ module.exports = {
                     'css-loader',
                     'postcss-loader',
                 ]
+            },
+            {
+                test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+                loader: 'url-loader',
+                options: {
+                  limit: 1000,
+                  esModule: false,
+                  name: './asstes/img/[hash:8].[ext]'
+                },
+                exclude: /(node_modules|bower_components)/,
             }
         ]
     }

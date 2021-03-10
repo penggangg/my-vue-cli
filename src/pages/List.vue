@@ -1,6 +1,7 @@
 <template>
     <div>
         列表
+        <img src="../assets/bussiness1.png" alt="" srcset="">
     </div>
 </template>
 <script>

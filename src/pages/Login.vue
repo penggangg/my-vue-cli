@@ -8,7 +8,7 @@
       <span>密码</span>
       <input type="password" placeholder="请输入密码" v-model="password" />
     </div>
-    <button @click="submit" :disabled="!name || !password">提交</button>
+    <button @click="submit" :disabled="!name || !password">提交22</button>
   </div>
 </template>
 <script>
@@ -32,9 +32,9 @@ export default {
   }
 };
 </script>
-<style>
+<style scoped>
     .warpper {
         font-size: 24px;
-        color: red;
+        color: blue;
     }
 </style>
