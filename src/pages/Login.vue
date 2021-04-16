@@ -26,7 +26,7 @@ export default {
   methods: {
     submit() {
         debugger
-        console.log(1121)
+        console.log(11212)
         this.$router.push({ path: "/list" });
     }
   }

@@ -28,7 +28,9 @@ const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
  */
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin') 
 // const ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
-
+const HappyPack = require('happypack');
+// 共享进程池， 以防止资源占用过多
+const happyThreadPool = HappyPack.ThreadPool({ size: 5 });
 /**
  * copy静态文件
  */
@@ -49,6 +51,27 @@ const isDev = process.env.NODE_ENV !== 'production'
 const chunkhash = isDev ? '[name].[hash:8].js' : 'js/[name].[chunkhash:8].js';
 const contenthash = isDev ? '[name].[hash:8].css' : 'css/[name].[contenthash:8].css';
 console.log(isDev)
+const happypack = () => {
+    return [
+        // new HappyPack({
+        //     id: 'eslint',
+        //     loaders: ['eslint-loader'],
+        //     threadPool: happyThreadPool,
+        // }),
+        new HappyPack({
+            id: 'babel',
+            loaders: [
+              {
+                loader: 'babel-loader',
+                options: {
+                  cacheDirectory: true,
+                },
+              },
+            ],
+            threadPool: happyThreadPool,
+        })
+    ]
+}
 module.exports = {
     // context: path.resolve(__dirname, '../'),
     mode: isDev ? 'development' : 'production',
@@ -132,6 +155,7 @@ module.exports = {
             }
         ]),
         new VueLoaderPlugin(),
+        ...happypack(),
         new FriendlyErrorsPlugin({
             // 运行成功
             compilationSuccessInfo: {
@@ -144,11 +168,24 @@ module.exports = {
             {
                 test: /\.js$/,
                 include: [resolve('src')],
-                loader: 'babel-loader?cacheDirectory'
+                // loader: 'babel-loader?cacheDirectory'
+                use: ['happypack/loader?id=babel']
             },
             {
                 test: /\.vue$/,
-                loader: 'vue-loader?cacheDirectory',
+                // loader: 'vue-loader?cacheDirectory',
+                // use: ['happypack/loader?id=vue']
+                use: [
+                    {
+                      loader: 'vue-loader',
+                      options: {
+                        loaders: {
+                          // happy 不支持 vue-loader， 将js 交由 happypack
+                          js: 'happypack/loader?id=babel',
+                        },
+                      },
+                    }
+                ]   
             },
             {
                 test: /\.css$/,
@@ -159,6 +196,7 @@ module.exports = {
                     'css-loader',
                     'postcss-loader',
                 ]
+                // use: ['happypack/loader?id=style']
             },
             {
                 test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
@@ -173,3 +211,4 @@ module.exports = {
         ]
     }
 }
+
