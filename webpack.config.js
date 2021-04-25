@@ -92,24 +92,27 @@ module.exports = {
         }
     },
     // 优化
-    optimization: {
-        runtimeChunk: {
-            name: 'mainfest' // 生成mainfest.js 文件 chunk的依赖关系
-        },
-        // 代码分离  将第三方库打包在一起由于用到的是chunkhash 第三方库的chunkhash基本不变 所以起到了持久化缓存的作用。
-        splitChunks: {
-            cacheGroups: {
-                vendor: {
-                    test: /[\\/]node_modules[\\/]/,
-                    chunks: 'initial', // 只打包初始依赖的第三方
-                    name: 'vendor',
-                },
-                axios: {
-                    test: /[\\/]node_modules[\\/]axios[\\/]/, // 这里可以单独把包打出来
-                    name: 'axios'
+        optimization: {
+            runtimeChunk: {
+                name: 'mainfest' // 生成mainfest.js 文件 chunk的依赖关系
+            },
+            // 代码分离  将第三方库打包在一起由于用到的是chunkhash 第三方库的chunkhash基本不变 所以起到了持久化缓存的作用。
+            splitChunks: {
+                cacheGroups: {
+                    vendor: {
+                        test: /[\\/]node_modules[\\/]/,
+                        chunks: 'all', // 只打包初始依赖的第三方
+                        name: 'chunk-vendor',
+                        priority: 1
+                    },
+                    axios: {
+                        test: /[\\/]node_modules[\\/]axios[\\/]/, // 这里可以单独把包打出来
+                        name: 'axios',
+                        chunks: 'all',
+                        priority: 10
+                    }
                 }
-            }
-        },
+            },
         // 代码压缩
         minimizer: [
             new UglifyJsPlugin({
@@ -139,7 +142,7 @@ module.exports = {
             filename: 'index.html',
             template: 'index.html',
             inject: 'body',
-            // hash: true
+            hash: true
         }),
         // css 分离
         new MiniCssExtractPlugin({

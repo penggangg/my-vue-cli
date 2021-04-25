@@ -1,7 +1,6 @@
 import Vue from 'vue'
-// import Router from 'vue-router'
-import Router from '@/assets/js/my-router.js'
-import Details from '@/pages/Details.vue'
+import Router from 'vue-router'
+// import Router from '@/assets/js/my-router.js'
 Vue.use(Router)
 
 export default new Router({
@@ -19,7 +18,8 @@ export default new Router({
         {
             path: '/details',
             name: 'details',
-            component: Details
+            component: () => import('@/pages/Details.vue')
+
         }
     ]
 })
